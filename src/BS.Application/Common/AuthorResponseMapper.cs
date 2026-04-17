@@ -1,5 +1,5 @@
 using BS.Application.DTOs;
-using BS.Domain.Enitity;
+using BS.Domain.Entity;
 
 namespace BS.Application.Common
 {

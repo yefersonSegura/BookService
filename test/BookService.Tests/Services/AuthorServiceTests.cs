@@ -1,5 +1,5 @@
 using BS.Application.Services;
-using BS.Domain.Enitity;
+using BS.Domain.Entity;
 using BS.Domain.Interfaces;
 using Moq;
 using Xunit;

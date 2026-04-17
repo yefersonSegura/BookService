@@ -4,7 +4,7 @@ using System.Xml.Linq;
 using BS.Application.Common;
 using BS.Application.Interfaces;
 
-namespace _04.BS.Infrastructure.Services
+namespace BS.Infrastructure.Services
 {
     internal sealed class IsbnSoapValidator : IIsbnSoapValidator
     {

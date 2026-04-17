@@ -1,10 +1,10 @@
-﻿using BS.Domain.Enitity;
+﻿using BS.Domain.Entity;
 using BS.Domain.Interfaces;
 using BS.Domain.Queries;
 using BS.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace _04.BS.Infrastructure.Repository
+namespace BS.Infrastructure.Repository
 {
     internal sealed class BookRepository : IBookRepository
     {

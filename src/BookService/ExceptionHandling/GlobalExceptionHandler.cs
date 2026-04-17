@@ -16,9 +16,9 @@ internal sealed class GlobalExceptionHandler(
         Exception exception,
         CancellationToken cancellationToken)
     {
-        logger.LogError(exception, "Excepción no controlada en {Path}", httpContext.Request.Path.Value);
-
         var (statusCode, title, detail) = MapException(exception, environment);
+
+        LogExceptionMappedToResponse(exception, httpContext, statusCode, title);
 
         var problemDetails = new ProblemDetails
         {
@@ -42,6 +42,46 @@ internal sealed class GlobalExceptionHandler(
         await problemDetailsService.WriteAsync(context).ConfigureAwait(false);
 
         return true;
+    }
+
+    /// <summary>
+    /// Registro estructurado (sin Serilog): mismos campos que suelen exportarse a consola, App Insights u OpenTelemetry.
+    /// </summary>
+    private void LogExceptionMappedToResponse(
+        Exception exception,
+        HttpContext httpContext,
+        int statusCode,
+        string title)
+    {
+        var traceId = httpContext.TraceIdentifier;
+        var method = httpContext.Request.Method;
+        var path = httpContext.Request.Path.Value ?? string.Empty;
+        var exceptionType = exception.GetType().FullName ?? exception.GetType().Name;
+
+        if (statusCode >= StatusCodes.Status500InternalServerError)
+        {
+            logger.LogError(
+                exception,
+                "Excepción no controlada. TraceId={TraceId} {RequestMethod} {RequestPath} StatusCode={StatusCode} Title={Title} ExceptionType={ExceptionType}",
+                traceId,
+                method,
+                path,
+                statusCode,
+                title,
+                exceptionType);
+        }
+        else
+        {
+            logger.LogWarning(
+                exception,
+                "Excepción mapeada a respuesta HTTP. TraceId={TraceId} {RequestMethod} {RequestPath} StatusCode={StatusCode} Title={Title} ExceptionType={ExceptionType}",
+                traceId,
+                method,
+                path,
+                statusCode,
+                title,
+                exceptionType);
+        }
     }
 
     private static (int StatusCode, string Title, string? Detail) MapException(Exception exception, IHostEnvironment environment)

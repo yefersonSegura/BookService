@@ -7,13 +7,14 @@ using BS.Application.DTOs;
 using BS.Application.Interfaces;
 using BS.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
-namespace BS.WebAPI.Services;
+namespace BS.Infrastructure.Services;
 
 internal sealed class LoginService(
     UserManager<ApplicationUser> userManager,
-    SignInManager<ApplicationUser> signInManager,
+    IPasswordHasher<ApplicationUser> passwordHasher,
     IConfiguration configuration) : ILoginService
 {
     public async Task<ResponseDto<LoginTokenDataDto>> LoginAsync(
@@ -44,9 +45,18 @@ internal sealed class LoginService(
             return response;
         }
 
-        var check = await signInManager.CheckPasswordSignInAsync(user, password, lockoutOnFailure: false)
-            .ConfigureAwait(false);
-        if (!check.Succeeded)
+        if (string.IsNullOrEmpty(user.PasswordHash))
+        {
+            ServiceResponseBuilder.ApplyDtoFailure(
+                response,
+                401,
+                "Credenciales inválidas.",
+                "Credenciales inválidas.");
+            return response;
+        }
+
+        var verification = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
+        if (verification == PasswordVerificationResult.Failed)
         {
             ServiceResponseBuilder.ApplyDtoFailure(
                 response,

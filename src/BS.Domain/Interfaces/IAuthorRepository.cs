@@ -1,4 +1,4 @@
-﻿using BS.Domain.Enitity;
+﻿using BS.Domain.Entity;
 using BS.Domain.Queries;
 
 namespace BS.Domain.Interfaces

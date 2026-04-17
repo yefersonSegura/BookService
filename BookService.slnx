@@ -1,6 +1,6 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/04.BS.Infrastructure/BS.Infrastructure.csproj" Id="1466db12-21ab-426f-94bd-ca824eb1495d" />
+    <Project Path="src/BS.Infrastructure/BS.Infrastructure.csproj" Id="1466db12-21ab-426f-94bd-ca824eb1495d" />
     <Project Path="src/BookService/BS.WebAPI.csproj" />
     <Project Path="src/BS.Application/BS.Application.csproj" Id="62056e41-59a4-4593-a52d-9751ef90db8e" />
     <Project Path="src/BS.Domain/BS.Domain.csproj" Id="d1218f94-6e7d-4568-8347-3cbc04b87247" />

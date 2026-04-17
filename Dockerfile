@@ -6,7 +6,7 @@ WORKDIR /src
 COPY ["src/BookService/BS.WebAPI.csproj", "BookService/"]
 COPY ["src/BS.Application/BS.Application.csproj", "BS.Application/"]
 COPY ["src/BS.Domain/BS.Domain.csproj", "BS.Domain/"]
-COPY ["src/04.BS.Infrastructure/BS.Infrastructure.csproj", "04.BS.Infrastructure/"]
+COPY ["src/BS.Infrastructure/BS.Infrastructure.csproj", "BS.Infrastructure/"]
 
 RUN dotnet restore "BookService/BS.WebAPI.csproj"
 

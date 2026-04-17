@@ -4,7 +4,7 @@ using BS.Application.Common;
 using BS.Application.Common.DTOs;
 using BS.Application.DTOs;
 using BS.Application.Interfaces;
-using BS.Domain.Enitity;
+using BS.Domain.Entity;
 using BS.Domain.Interfaces;
 using BS.Domain.Queries;
 
@@ -235,7 +235,7 @@ namespace BS.Application.Services
                 Isbn = normalizedIsbn,
                 Title = normalizedTitle,
                 PublicationYear = publicationYear,
-                PageNumber = 0,
+                PageCount = 0,
                 CoverUrl = coverUrl,
                 AuthorId = authorId
             };
@@ -316,10 +316,11 @@ namespace BS.Application.Services
             };
             try
             {
+                var (page, pageSize) = query.GetNormalizedPaging();
                 var listQuery = new BookListQuery
                 {
-                    Page = query.Page,
-                    PageSize = query.PageSize,
+                    Page = page,
+                    PageSize = pageSize,
                     Title = query.Title,
                     AutorName = query.AutorName
                 };
@@ -330,6 +331,8 @@ namespace BS.Application.Services
                 response.Result = items.Count;
                 response.Message = null;
                 response.Total = total;
+                response.Page = page;
+                response.PageSize = pageSize;
                 response.Data = items.Select(BookResponseMapper.FromEntity).ToList();
                 response.Errors.Clear();
                 return response;

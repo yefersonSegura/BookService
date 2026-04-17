@@ -1,13 +1,13 @@
 using System.Reflection;
 using System.Text;
-using _04.BS.Infrastructure.Repository;
-using _04.BS.Infrastructure.Services;
+using BS.Infrastructure.Repository;
+using BS.Infrastructure.Services;
 using BS.Application.Interfaces;
 using BS.Application.Services;
 using BS.Domain.Interfaces;
 using BS.Infrastructure.Data;
 using BS.WebAPI.ExceptionHandling;
-using BS.WebAPI.Services;
+using BS.WebAPI.Identity;
 using BS.WebAPI.Swagger;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -51,8 +51,7 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
     options.Password.RequireNonAlphanumeric = true;
     options.User.RequireUniqueEmail = true;
 })
-.AddEntityFrameworkStores<AppDbContext>()
-.AddSignInManager();
+.AddEntityFrameworkStores<AppDbContext>();
 
 builder.Services.AddAuthentication(options =>
 {
@@ -82,14 +81,20 @@ builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<IAuthorService, AuthorService>();
 builder.Services.AddScoped<ILoginService, LoginService>();
 
+var externalApis = builder.Configuration.GetSection("ExternalApis");
+var isbnSoapBaseUrl = externalApis["IsbnSoapServiceBaseUrl"]
+    ?? throw new InvalidOperationException("Configure ExternalApis:IsbnSoapServiceBaseUrl.");
+var openLibraryBaseUrl = externalApis["OpenLibraryBaseUrl"]
+    ?? throw new InvalidOperationException("Configure ExternalApis:OpenLibraryBaseUrl.");
+
 builder.Services.AddHttpClient<IIsbnSoapValidator, IsbnSoapValidator>(client =>
 {
-    client.BaseAddress = new Uri("http://webservices.daehosting.com/services/");
+    client.BaseAddress = new Uri(isbnSoapBaseUrl);
 });
 
 builder.Services.AddHttpClient<IOpenLibraryCoverClient, OpenLibraryCoverClient>(client =>
 {
-    client.BaseAddress = new Uri("https://openlibrary.org/");
+    client.BaseAddress = new Uri(openLibraryBaseUrl);
 });
 
 builder.Services.AddEndpointsApiExplorer();
@@ -144,24 +149,8 @@ using (var scope = app.Services.CreateScope())
     await db.Database.EnsureCreatedAsync().ConfigureAwait(false);
 
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-    if (!await db.Users.AnyAsync().ConfigureAwait(false))
-    {
-        var admin = new ApplicationUser
-        {
-            UserName = "admin",
-            Email = "admin@books.local",
-            EmailConfirmed = true
-        };
-        await userManager.CreateAsync(admin, "BookAdmin01!").ConfigureAwait(false);
-
-        var bibliotecario = new ApplicationUser
-        {
-            UserName = "bibliotecario",
-            Email = "biblio@books.local",
-            EmailConfirmed = true
-        };
-        await userManager.CreateAsync(bibliotecario, "BiblioUser01!").ConfigureAwait(false);
-    }
+    var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<ApplicationUser>>();
+    await IdentityDataSeeder.SeedAsync(db, userManager, passwordHasher).ConfigureAwait(false);
 }
 
 var enableSwagger = app.Environment.IsDevelopment()

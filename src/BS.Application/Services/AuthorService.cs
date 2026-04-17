@@ -2,7 +2,7 @@
 using BS.Application.Common.DTOs;
 using BS.Application.DTOs;
 using BS.Application.Interfaces;
-using BS.Domain.Enitity;
+using BS.Domain.Entity;
 using BS.Domain.Interfaces;
 using BS.Domain.Queries;
 
@@ -114,10 +114,11 @@ namespace BS.Application.Services
                 var filterName = string.IsNullOrWhiteSpace(query.AuthorName)
                     ? string.Empty
                     : TextNormalizer.NormalizeForPersistence(query.AuthorName);
+                var (page, pageSize) = query.GetNormalizedPaging();
                 var listQuery = new AuthorListQuery
                 {
-                    Page = query.Page,
-                    PageSize = query.PageSize,
+                    Page = page,
+                    PageSize = pageSize,
                     AuthorName = filterName
                 };
                 var (items, total) = await _authorRepository.GetAll(listQuery).ConfigureAwait(false);
@@ -127,6 +128,8 @@ namespace BS.Application.Services
                 response.Result = items.Count;
                 response.Message = null;
                 response.Total = total;
+                response.Page = page;
+                response.PageSize = pageSize;
                 response.Data = items.Select(AuthorResponseMapper.FromEntity).ToList();
                 response.Errors.Clear();
                 return response;
